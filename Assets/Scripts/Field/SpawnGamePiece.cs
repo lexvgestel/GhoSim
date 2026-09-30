@@ -100,7 +100,7 @@ public class SpawnGamePiece : MonoBehaviour
             };
         }
     
-        item.rb.velocity = finalVelocity;
+        item.rb.linearVelocity = finalVelocity;
         _lastSpawnTime = Time.time;  // Record spawn time
     }
 

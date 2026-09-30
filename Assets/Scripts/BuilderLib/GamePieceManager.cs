@@ -49,7 +49,7 @@ namespace BuilderLib
             var distance = (parentTransform ? parentTransform.InverseTransformPoint(target.position) : target.position) - piece.startPosition;
             var parentPosition = parentTransform ? parentTransform.position : Vector3.zero;
             Vector3 parentVelocity = Vector3.zero;
-            if (parentRb) parentVelocity = parentTransform ? parentTransform.InverseTransformDirection(parentRb.velocity) : parentRb.velocity;
+            if (parentRb) parentVelocity = parentTransform ? parentTransform.InverseTransformDirection(parentRb.linearVelocity) : parentRb.linearVelocity;
             
             // Calculate the step, but clamp it to not overshoot
             var distanceMagnitude = distance.magnitude;
@@ -62,7 +62,7 @@ namespace BuilderLib
             piece.startPosition = finalPosition;
             transform.position = parentPosition + (parentTransform ? parentTransform.TransformDirection(finalPosition) : finalPosition);
             piece.rb.position = parentPosition + (parentTransform ? parentTransform.TransformDirection(finalPosition) : finalPosition);
-            piece.rb.velocity = Vector3.zero;
+            piece.rb.linearVelocity = Vector3.zero;
         
             // Calculate target rotation based on movement direction
             Quaternion targetRotation = target.rotation;
@@ -131,7 +131,7 @@ namespace BuilderLib
             var rb = piece.rb;
             var transform = rb.transform;
 
-            rb.velocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
             piece.transform.localPosition = Vector3.zero;
             piece.transform.localEulerAngles = Vector3.zero;
             Vector3 velocity;
@@ -150,7 +150,7 @@ namespace BuilderLib
                     velocity = piece.owner.transform.forward.normalized * speed;
                     break;
             }
-            rb.velocity = velocity;
+            rb.linearVelocity = velocity;
             rb.angularVelocity = transform.TransformDirection(action.Spin);
         
             piece.state = GamePieceState.World;

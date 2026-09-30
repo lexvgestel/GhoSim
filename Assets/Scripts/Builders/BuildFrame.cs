@@ -167,8 +167,8 @@ if (deviceIndex < gamepads.Count)
         rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
         rb.interpolation = RigidbodyInterpolation.None;
         rb.mass = robotWeight;
-        rb.drag = 0.5f;
-        rb.angularDrag = 3f;
+        rb.linearDamping = 0.5f;
+        rb.angularDamping = 3f;
         _swerve.rb = rb;
         _swerve.gearRatio = gearRatio;
         _swerve.wheelDiameter = _moduleWheelDiameters[(int)moduleType];

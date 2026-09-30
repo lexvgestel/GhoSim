@@ -351,8 +351,8 @@ public class Buildelevator : BuildMechanism
             _rigidbodies[i] = _stageModels[i + 1].AddComponent<Rigidbody>();
 
             _rigidbodies[i].mass = stageWeights[i];
-            _rigidbodies[i].drag = 0;
-            _rigidbodies[i].angularDrag = driveTrain.angularDrag;
+            _rigidbodies[i].linearDamping = 0;
+            _rigidbodies[i].angularDamping = driveTrain.angularDamping;
             _rigidbodies[i].useGravity = true;
             _rigidbodies[i].isKinematic = false;
             _rigidbodies[i].interpolation = RigidbodyInterpolation.None;

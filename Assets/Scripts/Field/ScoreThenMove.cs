@@ -92,7 +92,7 @@ public class ScoreThenMove : FieldScorer
             piece.startPosition = finalPosition;
             transform.position = parentPosition + transform.parent.TransformDirection(finalPosition);
             piece.rb.position = parentPosition + transform.parent.TransformDirection(finalPosition);
-            piece.rb.velocity = Vector3.zero;
+            piece.rb.linearVelocity = Vector3.zero;
 
             var distanceMagnitude = distance.magnitude;
             
