@@ -5,7 +5,8 @@ using Util;
 
 public class LookAtRobot : MonoBehaviour
 {
-    [SerializeField] private Transform camera;
+    [SerializeField] private new Transform camera;
+    [HideInInspector] public int playerIndex = 0;
     private LoadMatch loadMatch;
 
     private Transform target;
@@ -19,8 +20,12 @@ public class LookAtRobot : MonoBehaviour
         loadMatch = FindFirstObjectByType<LoadMatch>();
         if (loadMatch != null)
         {
-            target = loadMatch.GetRobotLoaded().transform;
-            lookTo = loadMatch.GetTrackingType() == TrackingType.TrackRobot;
+            var robot = loadMatch.GetRobotLoaded(playerIndex);
+            if (robot != null)
+            {
+                target = robot.transform;
+                lookTo = loadMatch.GetTrackingType(playerIndex) == TrackingType.TrackRobot;
+            }
         }
     }
 

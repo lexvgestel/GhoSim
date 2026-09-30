@@ -1,6 +1,6 @@
 using System;
 using MyBox;
-using UnityEditor;
+//using UnityEditor;
 using UnityEngine;
 using Util;
 
@@ -29,6 +29,14 @@ public class BuildArm : BuildMechanism
     [SerializeField] private bool useNoWrapPoint = false;
     [ConditionalField(nameof(useNoWrapPoint), false)]
     [SerializeField] private float noWrapAngle = 180;
+
+    [Header("Physical Stop")]
+    [Tooltip("Hard-limits the joint itself so it physically cannot rotate past these angles, regardless of what the controller commands.")]
+    [SerializeField] private bool usePhysicalStop = false;
+    [ConditionalField(nameof(usePhysicalStop), false)]
+    [SerializeField] private float minAngle = -90f;
+    [ConditionalField(nameof(usePhysicalStop), false)]
+    [SerializeField] private float maxAngle = 90f;
 
     [Header("Use Advanced Settings")]
     [SerializeField] private bool useAdvancedSettings;
@@ -64,7 +72,7 @@ public class BuildArm : BuildMechanism
     // Start is called before the first frame update
     void Start()
     {
-        if (EditorApplication.isPlaying)
+        if (Application.isPlaying) //Editor
         {
             CreateAngleHolderParent();
             GenRB();
@@ -102,7 +110,7 @@ public class BuildArm : BuildMechanism
                 break;
         }
         
-        if (!EditorApplication.isPlaying)
+        if (!Application.isPlaying) //Editor
         {
             if (setPoints != null)
             {
@@ -130,7 +138,7 @@ public class BuildArm : BuildMechanism
         
             signedAngle = Mathf.Repeat(signedAngle, 360);
 
-            if (!EditorApplication.isPlaying)
+            if (!Application.isPlaying) //Editor
             {
 
             }
@@ -138,6 +146,7 @@ public class BuildArm : BuildMechanism
             {
                 _controller.setPoints = setPoints;
                 _controller.currentPosition = signedAngle;
+                ApplyPhysicalStop();
             }
         }
     }
@@ -415,13 +424,37 @@ public class BuildArm : BuildMechanism
         _joint.angularYMotion = ConfigurableJointMotion.Locked;
         _joint.angularZMotion = ConfigurableJointMotion.Locked;
 
-        _joint.angularXMotion = ConfigurableJointMotion.Free;
+        ApplyPhysicalStop();
         
-        _drive.maximumForce = 8000;
+        _drive.maximumForce = 800000000;
         _drive.positionDamper = 100;
         _drive.positionSpring = 0;
         _drive.useAcceleration = false;
         _joint.angularXDrive = _drive;
+    }
+
+    /// <summary>
+    /// Toggles a hard mechanical stop on the joint. When enabled the
+    /// ConfigurableJoint itself is limited to [minAngle, maxAngle] so the
+    /// arm physically cannot be pushed past those angles by the physics
+    /// engine, independent of anything the PID controller commands.
+    /// Safe to call every frame - flipping usePhysicalStop while playing
+    /// updates the joint immediately.
+    /// </summary>
+    private void ApplyPhysicalStop()
+    {
+        if (_joint == null) return;
+
+        if (usePhysicalStop)
+        {
+            _joint.angularXMotion = ConfigurableJointMotion.Limited;
+            _joint.lowAngularXLimit = new SoftJointLimit { limit = Mathf.Min(minAngle, maxAngle) };
+            _joint.highAngularXLimit = new SoftJointLimit { limit = Mathf.Max(minAngle, maxAngle) };
+        }
+        else
+        {
+            _joint.angularXMotion = ConfigurableJointMotion.Free;
+        }
     }
 
     private void GenRB()

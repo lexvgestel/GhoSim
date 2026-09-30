@@ -30,6 +30,7 @@ namespace BuilderLib
             var speed = action.Speed * 0.0254f;
         
             var transform = piece.rb.transform;
+            var parentTransform = transform.parent; // kan null zijn (losse fysica-stukken, bijv. in een bak)
             var target = t ? t : action.MoveTo.transform;
             Rigidbody parentRb = null;
             if (target != t)
@@ -45,10 +46,10 @@ namespace BuilderLib
                 disableColliders(piece);
             }
         
-            var distance = transform.parent.InverseTransformPoint(target.position) - piece.startPosition;
-            var parentPosition = transform.parent.position;
+            var distance = (parentTransform ? parentTransform.InverseTransformPoint(target.position) : target.position) - piece.startPosition;
+            var parentPosition = parentTransform ? parentTransform.position : Vector3.zero;
             Vector3 parentVelocity = Vector3.zero;
-            if (parentRb) parentVelocity = transform.parent.InverseTransformDirection(parentRb.velocity);
+            if (parentRb) parentVelocity = parentTransform ? parentTransform.InverseTransformDirection(parentRb.velocity) : parentRb.velocity;
             
             // Calculate the step, but clamp it to not overshoot
             var distanceMagnitude = distance.magnitude;
@@ -59,8 +60,8 @@ namespace BuilderLib
             var finalPosition = piece.startPosition + step;
         
             piece.startPosition = finalPosition;
-            transform.position = parentPosition + transform.parent.TransformDirection(finalPosition);
-            piece.rb.position = parentPosition + transform.parent.TransformDirection(finalPosition);
+            transform.position = parentPosition + (parentTransform ? parentTransform.TransformDirection(finalPosition) : finalPosition);
+            piece.rb.position = parentPosition + (parentTransform ? parentTransform.TransformDirection(finalPosition) : finalPosition);
             piece.rb.velocity = Vector3.zero;
         
             // Calculate target rotation based on movement direction
@@ -221,6 +222,3 @@ namespace BuilderLib
         }
     }
 }
-
-
-

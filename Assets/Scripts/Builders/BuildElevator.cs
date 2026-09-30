@@ -1,6 +1,5 @@
 using System;
 using MyBox;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Audio;
 using Util;
@@ -9,10 +8,15 @@ using Random = Unity.Mathematics.Random;
 [ExecuteAlways]
 public class Buildelevator : BuildMechanism
 {
-    [Header("General Settings")] [SerializeField]
+    public enum SlideAxis { X, Y, Z }
+
+[Header("General Settings")] [SerializeField]
     private SetPoint[] setPoints;
 
     [SerializeField] private ElevatorType elevatorType;
+
+    [Tooltip("Welke lokale as het bewegende deel gebruikt om langs te schuiven")]
+    [SerializeField] private SlideAxis motionAxis = SlideAxis.Y;
 
     [Header("ModelSettings")] [SerializeField]
     private bool model = true;
@@ -95,7 +99,7 @@ public class Buildelevator : BuildMechanism
     {
         Startup();
 
-        if (EditorApplication.isPlaying)
+        if (Application.isPlaying)
         {
             Initialize();
         }
@@ -104,6 +108,26 @@ public class Buildelevator : BuildMechanism
     private void OnEnable()
     {
         Startup();
+    }
+
+    private float GetAxisValue(Vector3 v)
+    {
+        switch (motionAxis)
+        {
+            case SlideAxis.X: return v.x;
+            case SlideAxis.Z: return v.z;
+            default: return v.y;
+        }
+    }
+
+    private Vector3 GetAxisVector()
+    {
+        switch (motionAxis)
+        {
+            case SlideAxis.X: return new Vector3(1, 0, 0);
+            case SlideAxis.Z: return new Vector3(0, 0, 1);
+            default: return new Vector3(0, 1, 0);
+        }
     }
 
     private void Startup()
@@ -189,7 +213,7 @@ public class Buildelevator : BuildMechanism
                 break;
         }
 
-        if (!EditorApplication.isPlaying)
+        if (!Application.isPlaying)
         {
             
             BuildModel();
@@ -223,7 +247,7 @@ public class Buildelevator : BuildMechanism
             if (i == _rigidbodies.Length - 1)
             {
                 _controllers[i].setPoints = setPoints;
-                _controllers[i].currentPosition = transform.InverseTransformPoint(_rigidbodies[i].transform.position).y;
+                _controllers[i].currentPosition = GetAxisValue(transform.InverseTransformPoint(_rigidbodies[i].transform.position));
                 _controllers[i].follower = false;
                 continue; //skip follower calculations
             }
@@ -240,13 +264,13 @@ public class Buildelevator : BuildMechanism
             
             float setPoint = 0;
 
-            if (combinedHeight < transform.InverseTransformPoint(_rigidbodies[^1].transform.position).y)
+            if (combinedHeight < GetAxisValue(transform.InverseTransformPoint(_rigidbodies[^1].transform.position)))
             {
-                setPoint = transform.InverseTransformPoint(_rigidbodies[^1].transform.position).y - combinedHeight;
+                setPoint = GetAxisValue(transform.InverseTransformPoint(_rigidbodies[^1].transform.position)) - combinedHeight;
             }
 
             _controllers[i].FollowPosition(setPoint);
-            _controllers[i].currentPosition = transform.InverseTransformPoint(_rigidbodies[i].transform.position).y;
+            _controllers[i].currentPosition = GetAxisValue(transform.InverseTransformPoint(_rigidbodies[i].transform.position));
         }
     }
 
@@ -295,8 +319,10 @@ public class Buildelevator : BuildMechanism
     /// </summary>
     private void CascadeMovement()
     {
+        if (_rigidbodies == null || _rigidbodies.Length == 0) return;
+
         //TODO: add the cascade rigged motion to this function
-        float totalHeight = transform.InverseTransformPoint(_rigidbodies[^1].transform.position).y;
+        float totalHeight = GetAxisValue(transform.InverseTransformPoint(_rigidbodies[^1].transform.position));
         
         //Sets carriage position
         _controllers[^1].follower = false;
@@ -309,7 +335,7 @@ public class Buildelevator : BuildMechanism
             float targetHeight = totalHeight * (i + 1) / _rigidbodies.Length;
             _controllers[i].follower = true;
             _controllers[i].FollowPosition(targetHeight);
-            _controllers[i].currentPosition = transform.InverseTransformPoint(_rigidbodies[i].transform.position).y;
+            _controllers[i].currentPosition = GetAxisValue(transform.InverseTransformPoint(_rigidbodies[i].transform.position));
         }
     }
 
@@ -346,12 +372,12 @@ public class Buildelevator : BuildMechanism
         {
             _joints[i] = _stageModels[i + 1].AddComponent<ConfigurableJoint>();
             _joints[i].connectedBody = driveTrain;
-            _joints[i].xMotion = ConfigurableJointMotion.Locked;
-            _joints[i].zMotion = ConfigurableJointMotion.Locked;
+            _joints[i].xMotion = motionAxis == SlideAxis.X ? ConfigurableJointMotion.Free : ConfigurableJointMotion.Locked;
+            _joints[i].yMotion = motionAxis == SlideAxis.Y ? ConfigurableJointMotion.Free : ConfigurableJointMotion.Locked;
+            _joints[i].zMotion = motionAxis == SlideAxis.Z ? ConfigurableJointMotion.Free : ConfigurableJointMotion.Locked;
             _joints[i].angularYMotion = ConfigurableJointMotion.Locked;
             _joints[i].angularZMotion = ConfigurableJointMotion.Locked;
             _joints[i].angularXMotion = ConfigurableJointMotion.Locked;
-            _joints[i].yMotion = ConfigurableJointMotion.Free;
 
             _drive.maximumForce = 8000000;
             _drive.positionDamper = 10000;
@@ -390,7 +416,7 @@ public class Buildelevator : BuildMechanism
             }
 
             _controllers[i].isAngularJoint = false;
-            _controllers[i].driveAxis = new Vector3(0, 1, 0);
+            _controllers[i].driveAxis = GetAxisVector();
             _controllers[i].joint = _joints[i];
 
             if (i < _stageModels.Length - 2)
@@ -414,7 +440,18 @@ public class Buildelevator : BuildMechanism
         _drives[i].positionDamper = 10000;
         _drives[i].positionSpring = 0;
         _drives[i].useAcceleration = false;
-        _joints[i].yDrive = _drive;
+        switch (motionAxis)
+        {
+            case SlideAxis.X:
+                _joints[i].xDrive = _drive;
+                break;
+            case SlideAxis.Z:
+                _joints[i].zDrive = _drive;
+                break;
+            default:
+                _joints[i].yDrive = _drive;
+                break;
+        }
     }
 
     //ai warning

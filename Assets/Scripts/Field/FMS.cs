@@ -33,8 +33,23 @@ public class FMS : MonoBehaviour
     // Start is called before the first frame update
     void OnEnable()
     {
+        if (_activeInstance != null && _activeInstance != this)
+        {
+            Debug.LogWarning($"Er bestaat al een actief FMS-object ({_activeInstance.gameObject.name}). " +
+                              $"Dit tweede object ({gameObject.name}) wordt uitgeschakeld om de klok niet dubbel te laten aftellen.");
+            enabled = false;
+            return;
+        }
+        _activeInstance = this;
         Restart();
     }
+
+    private void OnDisable()
+    {
+        if (_activeInstance == this) _activeInstance = null;
+    }
+
+    private static FMS _activeInstance;
 
     // Update is called once per frame
     void Update()

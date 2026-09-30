@@ -10711,6 +10711,7 @@ MonoBehaviour:
   targetVelocity: 0
   targetModuleAngle: 0
   lateralFrictionMultiplier: 1
+  tractionCoefficient: 1.1
   _rb: {fileID: 0}
 --- !u!1 &2419073261462950603
 GameObject:
@@ -14255,6 +14256,7 @@ MonoBehaviour:
   targetVelocity: 0
   targetModuleAngle: 0
   lateralFrictionMultiplier: 1
+  tractionCoefficient: 1.1
   _rb: {fileID: 0}
 --- !u!1 &3081832974007322699
 GameObject:
@@ -15699,6 +15701,7 @@ MonoBehaviour:
   targetVelocity: 0
   targetModuleAngle: 0
   lateralFrictionMultiplier: 1
+  tractionCoefficient: 1.1
   _rb: {fileID: 0}
 --- !u!1 &3316311622145050621
 GameObject:
@@ -20118,6 +20121,7 @@ MonoBehaviour:
   targetVelocity: 0
   targetModuleAngle: 0
   lateralFrictionMultiplier: 1
+  tractionCoefficient: 1.1
   _rb: {fileID: 0}
 --- !u!1 &4047415677584898462
 GameObject:
@@ -40084,11 +40088,11 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 7169807037881315516}
-  - {fileID: 3388927804447606485}
-  - {fileID: 4307311979130041915}
-  - {fileID: 3964558714520866432}
   - {fileID: 4958687602836549447}
+  - {fileID: 3388927804447606485}
+  - {fileID: 7169807037881315516}
+  - {fileID: 3964558714520866432}
+  - {fileID: 4307311979130041915}
   m_Father: {fileID: 7297238738904231320}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7604589125598888124

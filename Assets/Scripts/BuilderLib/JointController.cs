@@ -79,7 +79,7 @@ public class JointController : MonoBehaviour
 
     private float _overridePosition;
 
-    private float _lastUpdateTimestamp;
+    //private float _lastUpdateTimestamp;
 
     // Start is called before the first frame update
     void Start()
@@ -114,7 +114,7 @@ public class JointController : MonoBehaviour
             integralSaturation = iSat
         };
 
-        _lastUpdateTimestamp = Time.time;
+        //_lastUpdateTimestamp = Time.time;
     }
 
     public string GetActiveSetpoint()
@@ -380,16 +380,16 @@ public class JointController : MonoBehaviour
                 }
             }
 
-            rawPID = _pidController.UpdateAngle(Time.time - _lastUpdateTimestamp, currentPosition, targetForPid);
+            rawPID = _pidController.UpdateAngle(Time.fixedDeltaTime, currentPosition, targetForPid);
             joint.targetAngularVelocity = rawPID * driveAxis;
         }
         else
         {
-            rawPID = _pidController.UpdateLinear(Time.time - _lastUpdateTimestamp, currentPosition, _targetPosition);
+            rawPID = _pidController.UpdateLinear(Time.fixedDeltaTime, currentPosition, _targetPosition);
             joint.targetVelocity = -rawPID * driveAxis;
         }
 
-        _lastUpdateTimestamp = Time.time;
+        //_lastUpdateTimestamp = Time.time;
     }
 
     private bool PassesThroughWrapAngle(float currentAngle, float targetAngle, float wrapAngle)

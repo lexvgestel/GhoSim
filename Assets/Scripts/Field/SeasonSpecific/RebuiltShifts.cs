@@ -21,6 +21,12 @@ public class RebuiltShifts : ScoreOnlyOnce
     [SerializeField] private int seasonAutoTime = 20;
     [SerializeField] private int seasonEndgameTime = 30;
 
+    // Scoring grace period after the shift light turns off
+    [Header("Scoring Grace Period")]
+    [SerializeField] private float scoreGracePeriod = 3f;
+    private bool wasOnShift;
+    private float shiftOffTime = -1f;
+
     private void Awake()
     {
         var fms = FindObjectOfType<FMS>();
@@ -41,14 +47,35 @@ public class RebuiltShifts : ScoreOnlyOnce
         currentShift = CurrentShift.Auto;
         previousMatchState = MatchState.auto;
         FMS.MatchTimer = seasonMatchTime;
+        wasOnShift = false;
+        shiftOffTime = -1f;
     }
 
     private new void FixedUpdate()
     {
-        shiftOnLight.SetActive(isOnShift());
+        bool onShift = isOnShift();
+
+        // Light reflects the real shift state, no delay
+        shiftOnLight.SetActive(onShift);
+
+        // Track the moment the light turns off, so we can keep scoring briefly after
+        if (onShift)
+        {
+            wasOnShift = true;
+            shiftOffTime = -1f;
+        }
+        else if (wasOnShift)
+        {
+            shiftOffTime = Time.time;
+            wasOnShift = false;
+        }
+
+        bool scoringActive = onShift ||
+            (shiftOffTime >= 0f && Time.time - shiftOffTime <= scoreGracePeriod);
+
         poolOccupyObjects();
         handleShiftState();
-        compareObjects(isOnShift());
+        compareObjects(scoringActive);
         ScorePoints(totalScore);
         ShiftOverlay.ShiftTimer = shiftTimer;
         switch (currentShift)

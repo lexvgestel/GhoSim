@@ -463,6 +463,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "ToggleReverse",
+                    "type": "Button",
+                    "id": "7f9a7693-3863-44a3-845e-15992b148da9",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -1117,6 +1126,17 @@
                 },
                 {
                     "name": "",
+                    "id": "b45c13be-3580-4412-a247-be673637bf17",
+                    "path": "<Gamepad>/select",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Escape",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "f3308022-e574-4a27-9c86-ddad0df78c26",
                     "path": "<Keyboard>/upArrow",
                     "interactions": "",
@@ -1189,6 +1209,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "LeftShift",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "83f7e7eb-c2b1-4440-9f94-7277f85c10ff",
+                    "path": "<Gamepad>/rightStickPress",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleReverse",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -8,9 +8,16 @@ using Util;
 
 public class AutoAlign : MonoBehaviour
 {
+    private enum ReefBranch { Either, Left, Right }
+
     [SerializeField] private float alignDistance = 20;
     [SerializeField] private Pose2d alignOffset;
     [SerializeField] private AutoAlginType alginType = AutoAlginType.release;
+
+    [Tooltip("Which branch of the reef face this AutoAlign instance should target. " +
+             "'Node' objects are treated as Left, 'Node (1)' objects are treated as Right. " +
+             "Use 'Either' to keep the old behavior of snapping to whichever branch is closest.")]
+    [SerializeField] private ReefBranch branch = ReefBranch.Either;
 
     [ConditionalField(true, nameof(Predicate))] [SerializeField]
     private ControllerInputs controllerButton;
@@ -79,6 +86,11 @@ public class AutoAlign : MonoBehaviour
         
         foreach (var node in nodes)
         {
+            // "Node" (offset +z on the reef face) = Left branch
+            // "Node (1)" (offset -z on the reef face) = Right branch
+            if (branch == ReefBranch.Left && node.name != "Node") continue;
+            if (branch == ReefBranch.Right && node.name != "Node (1)") continue;
+
             targetNodes.Add(new Pose2d(node.transform)); 
         }
 

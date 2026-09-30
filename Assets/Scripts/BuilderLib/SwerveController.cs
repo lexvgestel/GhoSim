@@ -155,24 +155,25 @@ public class SwerveController : MonoBehaviour
         float fwd, str;
 
 
-        if (fieldCentric || inputsOveriden)
-        {
+if (fieldCentric || inputsOveriden)
+{
+    if (!reversed)
+    {
+        fwd = fieldRelativeAngle.x * velocityMp;
+        str = fieldRelativeAngle.z * velocityMp;
+    }
+    else
+    {
+        fwd = -fieldRelativeAngle.x * velocityMp;
+        str = -fieldRelativeAngle.z * velocityMp;
+    }
 
-            if (!reversed || inputsOveriden)
-            {
-                inputsOveriden = false;
-
-                fwd = fieldRelativeAngle.x * velocityMp;
-
-                str = fieldRelativeAngle.z * velocityMp;
-            }
-            else
-            {
-                fwd = -fieldRelativeAngle.x * velocityMp;
-
-                str = -fieldRelativeAngle.z * velocityMp;
-            }
-        }
+    // Must reset regardless of which branch ran above - this is what lets
+    // manual joystick input take back control after AutoAlign's override.
+    // Previously this line only lived inside the "!reversed" branch, so
+    // with reversed = true it never ran and control stayed locked forever.
+    inputsOveriden = false;
+}
         else
         {
             if (!reversed)

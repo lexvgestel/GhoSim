@@ -1051,6 +1051,8 @@ MonoBehaviour:
   gearRatio: 0
   targetVelocity: 0
   targetModuleAngle: 0
+  lateralFrictionMultiplier: 1
+  tractionCoefficient: 1.1
   _rb: {fileID: 0}
 --- !u!1 &1035660112220893398
 GameObject:
@@ -2111,6 +2113,8 @@ MonoBehaviour:
   gearRatio: 0
   targetVelocity: 0
   targetModuleAngle: 0
+  lateralFrictionMultiplier: 1
+  tractionCoefficient: 1.1
   _rb: {fileID: 0}
 --- !u!1 &1647768684324541679
 GameObject:
@@ -3914,7 +3918,7 @@ Transform:
   m_GameObject: {fileID: 3468609586719868868}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.028, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -8353,6 +8357,8 @@ MonoBehaviour:
   gearRatio: 0
   targetVelocity: 0
   targetModuleAngle: 0
+  lateralFrictionMultiplier: 1
+  tractionCoefficient: 1.1
   _rb: {fileID: 0}
 --- !u!1 &6864785456351749878
 GameObject:
@@ -11368,6 +11374,8 @@ MonoBehaviour:
   gearRatio: 0
   targetVelocity: 0
   targetModuleAngle: 0
+  lateralFrictionMultiplier: 1
+  tractionCoefficient: 1.1
   _rb: {fileID: 0}
 --- !u!1 &9051698570371558117
 GameObject:

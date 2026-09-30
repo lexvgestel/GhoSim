@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using MyBox;
 using Unity.VisualScripting;
-using UnityEditor;
+//using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
@@ -100,7 +100,7 @@ public class BuildFrame : MonoBehaviour
         Startup();
         BuildBumpers();
 
-        if (EditorApplication.isPlaying)
+        if (Application.isPlaying) //Editor
         {
             gameObject.AddComponent<RestartMatch>();
             
@@ -108,32 +108,76 @@ public class BuildFrame : MonoBehaviour
         }
     }
 
-    public SwerveController GetSwerveController()
+public SwerveController GetSwerveController()
+{
+    if (_swerve == null)
     {
-        if (_swerve == null)
+        var sourceAsset = Resources.Load("Controls/Builder") as InputActionAsset;
+        _inputAsset = Instantiate(sourceAsset);
+        var playerInput = Utils.TryGetAddComponent<PlayerInput>(gameObject);
+
+        playerInput.enabled = false;
+        playerInput.actions = _inputAsset;
+        playerInput.neverAutoSwitchControlSchemes = true;
+        playerInput.notificationBehavior = PlayerNotifications.InvokeUnityEvents;
+        playerInput.enabled = true;
+
+        // Gamepad pairing only works reliably during Play mode. This class is
+        // [ExecuteAlways], so exiting Play mode re-runs LoadMatch.Start() ->
+        // SpawnRobot() -> GetSwerveController() in the editor, where
+        // SwitchCurrentControlScheme throws "Invalid user" - skip pairing then.
+        if (Application.isPlaying)
         {
-            _inputAsset = Resources.Load("Controls/Builder") as InputActionAsset;
-            var playerInput = Utils.TryGetAddComponent<PlayerInput>(gameObject);
-            playerInput.actions = _inputAsset;
-            playerInput.neverAutoSwitchControlSchemes = true;
-            playerInput.defaultControlScheme = playerNumber;
-            playerInput.notificationBehavior = PlayerNotifications.InvokeUnityEvents;
-            _swerve = Utils.TryGetAddComponent<SwerveController>(gameObject);
-            var rb = Utils.TryGetAddComponent<Rigidbody>(gameObject);
-            rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
-            rb.interpolation = RigidbodyInterpolation.None;
-            rb.mass = robotWeight;
-            rb.drag = 0.5f;
-            rb.angularDrag = 0.05f;
-            _swerve.rb = rb;
-            _swerve.gearRatio = gearRatio;
-            _swerve.wheelDiameter = _moduleWheelDiameters[(int)moduleType];
+            int deviceIndex = playerNumber == "Player2" ? 1 : 0;
+            var gamepads = Gamepad.all;
+if (deviceIndex < gamepads.Count)
+{
+    var device = gamepads[deviceIndex];
+    var scheme = InputControlScheme.FindControlSchemeForDevice(device, _inputAsset.controlSchemes);
+    if (scheme.HasValue)
+    {
+        try
+        {
+            playerInput.SwitchCurrentControlScheme(scheme.Value.name, device);
         }
-        
-        return _swerve;
+        catch (InvalidOperationException)
+        {
+            // Can fire if this runs during the Play-mode exit/teardown
+            // window, where Application.isPlaying can still briefly read
+            // true even though the PlayerInput's InputUser is already
+            // being torn down. Harmless here - the robot/objects are
+            // about to be destroyed anyway.
+            Debug.LogWarning($"BuildFrame: control scheme switch for {playerNumber} was interrupted (likely exiting Play mode) - ignoring.");
+        }
+    }
+    else
+    {
+        Debug.LogWarning($"BuildFrame: no control scheme in the input actions asset supports {device.displayName} for {playerNumber}.");
+    }
+}
+            else
+            {
+                Debug.LogWarning($"BuildFrame: no distinct gamepad for {playerNumber} " +
+                                  $"({gamepads.Count} gamepad(s) connected) - it will share input with another player until a second gamepad is connected.");
+            }
+        }
+
+        _swerve = Utils.TryGetAddComponent<SwerveController>(gameObject);
+        var rb = Utils.TryGetAddComponent<Rigidbody>(gameObject);
+        rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
+        rb.interpolation = RigidbodyInterpolation.None;
+        rb.mass = robotWeight;
+        rb.drag = 0.5f;
+        rb.angularDrag = 3f;
+        _swerve.rb = rb;
+        _swerve.gearRatio = gearRatio;
+        _swerve.wheelDiameter = _moduleWheelDiameters[(int)moduleType];
     }
 
-    private void OnEnable()
+    return _swerve;
+  }
+   
+private void OnEnable()
     {
         Startup();
         BuildBumpers();

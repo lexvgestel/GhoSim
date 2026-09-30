@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using BuilderLib;
-using UnityEditor;
+//using UnityEditor;
 using UnityEngine;
 using Util;
 
@@ -24,7 +24,7 @@ public class Eject : FeildInteraction
 
     void Update()
     {
-        if (EditorApplication.isPlaying) return;
+        if (Application.isPlaying) return;//Editor
         ejectType.Type = NodeType.Outake;
     }
 }

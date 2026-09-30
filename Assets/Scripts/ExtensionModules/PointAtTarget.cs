@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using MyBox;
 using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Util;
@@ -15,6 +14,9 @@ public class PointAtTarget : MonoBehaviour
     [SerializeField] private TargetWhen targetWhen;
     
     [SerializeField] private TargetingMethod targetingMethod;
+
+    [Tooltip("Optioneel: gebruik het actieve setpoint van een ander mechanisme (bijv. een bestaande Mode Toggle) in plaats van dit object zelf")]
+    [SerializeField] private BuildMechanism drivingMechanism;
     
     [Header("Targeting Settings")]
     [ConditionalField(true, nameof(IsPreset))]
@@ -31,6 +33,13 @@ public class PointAtTarget : MonoBehaviour
     [SerializeField] private float heightOffset;
     [ConditionalField(true, nameof(IsInterpolating), true)] 
     [SerializeField] private float angleOffset;
+
+    [Tooltip("Begrens de berekende hoek, zodat de hood niet doorschiet als je over de middellijn heen gaat")]
+    [SerializeField] private bool clampAngle;
+    [ConditionalField(nameof(clampAngle))]
+    [SerializeField] private float minAngle;
+    [ConditionalField(nameof(clampAngle))]
+    [SerializeField] private float maxAngle;
 
     [ConditionalField(true, nameof(IsInterpolating))] 
     [SerializeField] private DistanceValue[] interpolationTable;
@@ -75,10 +84,12 @@ public class PointAtTarget : MonoBehaviour
             _lateStartup = false;
         }
 
+        var checkController = drivingMechanism ? drivingMechanism.GetController() : _controller;
+
         bool shouldTarget = targetWhen == TargetWhen.Always || 
-                            (targetWhen == TargetWhen.AtSetpoint && 
+                            (targetWhen == TargetWhen.AtSetpoint && checkController &&
                              String.Equals(
-                                 (_controller.GetActiveSetpoint() ?? "").ToLower().Trim(), 
+                                 (checkController.GetActiveSetpoint() ?? "").ToLower().Trim(), 
                                  SetpointName.ToLower().Trim(), 
                                  StringComparison.OrdinalIgnoreCase));
 
@@ -105,13 +116,18 @@ public class PointAtTarget : MonoBehaviour
                 break;
         }
     
+        if (clampAngle)
+        {
+            setpointValue = Mathf.Clamp(setpointValue, minAngle, maxAngle);
+        }
+
         _controller.OverridePosition(setpointValue);
     }
     
     //runs on editor change
     private void OnValidate()
     {
-        if (EditorApplication.isPlaying)
+        if (Application.isPlaying)
         {
             UpdateTable(interpolationTable);
         }

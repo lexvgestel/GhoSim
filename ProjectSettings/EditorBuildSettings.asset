@@ -4,5 +4,42 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/RebuiltMenuSingle.unity
+    guid: cfa4369e6d4c76c4cb1c7fef444f9877
+  - enabled: 1
+    path: Assets/Scenes/RebuiltSceneSingle.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/ReefscapeMenuBlinky.unity
+    guid: 27b075d2d9f07c945917ec2a0d000c53
+  - enabled: 1
+    path: Assets/Scenes/ReefscapeSceneBlinky.unity
+    guid: 291d94c505adc2144b6c3758c1cd729a
+  - enabled: 1
+    path: Assets/Scenes/RebuiltMenuMulti.unity
+    guid: e92e749c69270a34f8085f56c8090d19
+  - enabled: 1
+    path: Assets/Scenes/RebuiltMenuVS.unity
+    guid: 3d4938b9113b4c34190a144679646999
+  - enabled: 1
+    path: Assets/Scenes/RebuiltSceneMulti.unity
+    guid: 6eb17d8e288211d46a16afbb3e6f1297
+  - enabled: 1
+    path: Assets/Scenes/RebuiltSceneVS.unity
+    guid: 7b7012c4bcddfd54dbad8f2b5502664c
+  - enabled: 1
+    path: Assets/Scenes/ReefscapeSceneBlinkyEVO2.unity
+    guid: e3de9a73749277d46a84ff4e09fa314a
+  - enabled: 1
+    path: Assets/Scenes/ReefscapeMenuBlinkyEVO2.unity
+    guid: aff16cbd3387c8241860c888bd884c82
+  - enabled: 1
+    path: Assets/Scenes/ReefscapeMenuBlinkyEVO1.unity
+    guid: 64588081f9b895846bd275e7f335cf1f
+  - enabled: 1
+    path: Assets/Scenes/ReefscapeSceneBlinkyEVO1.unity
+    guid: 477e48bb30e76b44fbff5e792a1a1bf7
   m_configObjects: {}
+  m_UseUCBPForAssetBundles: 0

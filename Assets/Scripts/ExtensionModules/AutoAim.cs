@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MyBox;
-using UnityEditor;
+//using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Util;
@@ -38,6 +38,9 @@ public class AutoAim : MonoBehaviour
     [ConditionalField(true, nameof(WhenWithinRange))]
     [SerializeField] private float activationRange = 20f; // in inches
 
+    [Header("Aiming Correction")]
+    [SerializeField] private float angleOffset = 90f; // pas aan als je turret fysiek 90° gedraaid gemonteerd is
+
     [Header("PID Tuning")]
     [SerializeField] private bool advanced;
 
@@ -61,7 +64,7 @@ public class AutoAim : MonoBehaviour
     private bool WhenAtSetpoint() => targetWhen == AimAtWhen.AtSetpoint;
     private bool WhenButton() => targetWhen == AimAtWhen.WhenPressing;
     private bool WhenWithinRange() => targetWhen == AimAtWhen.WithinRange;
-    private bool IsPlaying() => EditorApplication.isPlaying;
+    private bool IsPlaying() => Application.isPlaying; //Editor
 
     private SwerveController controller;
     private PIDController _steeringPIDController;
@@ -71,7 +74,7 @@ public class AutoAim : MonoBehaviour
 
     private void Start()
     {
-        if (!EditorApplication.isPlaying) return;
+        if (!Application.isPlaying) return; //Editor
         
         var foundTargets = Utils.FindGameObjectsOnLayer("AutoAngleNodes");
         
@@ -114,7 +117,7 @@ public class AutoAim : MonoBehaviour
     {
         connectedTo = drivingMechanism ? drivingMechanism.name : "none";
 
-        if (!EditorApplication.isPlaying) return;
+        if (!Application.isPlaying) return; //Editor
 
         // Initialize PlayerInput if needed (similar to AutoAlign pattern)
         if (!_playerInput && targetWhen == AimAtWhen.WhenPressing)
@@ -136,7 +139,7 @@ public class AutoAim : MonoBehaviour
         }
         
         Vector3 target = GetTargetValue();
-        float targetAngle = CalculateTargetAngle(target) + 180;
+        float targetAngle = CalculateTargetAngle(target) + 180 + angleOffset;
         float currentAngle = transform.localRotation.eulerAngles.y;
         
         // Use PID controller to calculate smooth steering output

@@ -220,11 +220,17 @@ MonoBehaviour:
   defaultSpawn: {fileID: 0}
   matchTime: 150
   autoTime: 15
-  autoDisableTime: 0.5
+  autoDisableTime: 3
   endgameTime: 20
   matchDisabledTime: 3
-  blueStationCams: []
-  redStationCams: []
+  blueStationCams:
+  - {fileID: 1938009755759183841}
+  - {fileID: 3227451795345426361}
+  - {fileID: 2779249078983693355}
+  redStationCams:
+  - {fileID: 6037544511408222376}
+  - {fileID: 4341153178898179343}
+  - {fileID: 5733031440447042971}
   state: 0
   robotState: 0
 --- !u!1 &1491398356527058179
@@ -763,6 +769,10 @@ PrefabInstance:
     - target: {fileID: 6796266205672342148, guid: af1afaa5f6c06964b8537f9520b99902, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7718590469985067565, guid: af1afaa5f6c06964b8537f9520b99902, type: 3}
+      propertyPath: isBlue
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8767927949593330948, guid: af1afaa5f6c06964b8537f9520b99902, type: 3}
       propertyPath: m_Name
@@ -1372,7 +1382,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7718590469985067565, guid: af1afaa5f6c06964b8537f9520b99902, type: 3}
       propertyPath: isBlue
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8767927949593330948, guid: af1afaa5f6c06964b8537f9520b99902, type: 3}
       propertyPath: m_Name

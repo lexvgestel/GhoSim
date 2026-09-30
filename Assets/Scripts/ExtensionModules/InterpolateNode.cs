@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MyBox;
-using UnityEditor;
+//using UnityEditor;
 using UnityEngine;
 using Util;
 
@@ -36,7 +36,7 @@ public class InterpolateNode: MonoBehaviour
     private bool IsPreset() => targetType == TargetType.Preset;
     private bool WhenAtSetpoint() => targetWhen == TargetWhen.AtSetpoint;
     
-    private bool IsPlaying() => EditorApplication.isPlaying;
+    private bool IsPlaying() => Application.isPlaying;//Editor
 
     private BuildMechanism targetMechanism;
     private BuildNode targetNode;
@@ -47,7 +47,7 @@ public class InterpolateNode: MonoBehaviour
     private void Start()
     {
         InitializeCache();
-        if (!EditorApplication.isPlaying) return;
+        if (!Application.isPlaying) return; //Editor
         targetNode = GetComponent<BuildNode>();
         foreach (var action in targetNode.Actions)
         {
@@ -69,7 +69,7 @@ public class InterpolateNode: MonoBehaviour
 
     private void Update()
     {
-        if (!EditorApplication.isPlaying)
+        if (!Application.isPlaying) //Editor
         {
             targetMechanism = Utils.FindParentObjectComponent<BuildMechanism>(gameObject);
             targetNode = GetComponent<BuildNode>();
@@ -87,7 +87,7 @@ public class InterpolateNode: MonoBehaviour
         
         connectedTo = targetMechanism ? targetMechanism.name : "none";
 
-        if (!EditorApplication.isPlaying) return;
+        if (!Application.isPlaying) return; //Editor
         var currentSetpoint = "";
         if (targetMechanism && targetMechanism.GetController())
         {
@@ -115,13 +115,19 @@ public class InterpolateNode: MonoBehaviour
         float currentDistance = Vector3.Distance(originPos, target);
         speed = Interpolate(currentDistance);
 
-        actionLookup.TryGetValue(targetOuttake.selectedName, out var nodeAction);
-         nodeAction.overideSpeed = (speed);
+        if (actionLookup.TryGetValue(targetOuttake.selectedName, out var nodeAction) && nodeAction != null)
+        {
+        nodeAction.overideSpeed = speed;
+        }
+        else
+        {
+         Debug.LogWarning($"{gameObject.name}: No NodeAction named '{targetOuttake.selectedName}' found for outtake targeting.", this);
+        }
     }
     
     private void OnValidate()
     {
-        if (EditorApplication.isPlaying)
+        if (Application.isPlaying) //Editor
         {
             UpdateTable(interpolationTable);
         }

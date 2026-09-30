@@ -14,19 +14,29 @@ public class GameUI : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        UI = GameObject.Find("GameUi");
-        fms = GameObject.Find("FieldHolder").GetComponentInChildren<FMS>();
-        spawnedUI = Instantiate(gameUI, UI.transform.GetChild(0));
-        Init();
+        StartCoroutine(WaitAndInit());
     }
 
-    private void Awake()
+    private IEnumerator WaitAndInit()
     {
+        GameObject fieldHolder = null;
+        FMS foundFms = null;
+
+        // Wacht tot LoadMatch klaar is met het aanmaken van FieldHolder + FMS
+        while (foundFms == null)
+        {
+            fieldHolder = GameObject.Find("FieldHolder");
+            if (fieldHolder != null)
+            {
+                foundFms = fieldHolder.GetComponentInChildren<FMS>();
+            }
+            if (foundFms == null) yield return null;
+        }
+
         UI = GameObject.Find("GameUi");
-        fms = GameObject.Find("FieldHolder").GetComponentInChildren<FMS>();
+        fms = foundFms;
         spawnedUI = Instantiate(gameUI, UI.transform.GetChild(0));
         Init();
-        
     }
 
     protected virtual void Init()

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using BuilderLib;
 using MyBox;
 using Unity.VisualScripting;
-using UnityEditor;
+//using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Util;
@@ -36,7 +36,7 @@ public class BuildNode: MonoBehaviour
     
     private void Start()
     {
-        if (!EditorApplication.isPlaying) return;
+        if (!Application.isPlaying) return; //Editor
         
         foreach (var child in Utils.GetAllChildren(transform))
         {
@@ -86,7 +86,7 @@ public class BuildNode: MonoBehaviour
     void Update()
     {
         
-        if (!EditorApplication.isPlaying)
+        if (!Application.isPlaying) //Editor
         {
             bool hasIntake = false;
             if (Actions != null)
