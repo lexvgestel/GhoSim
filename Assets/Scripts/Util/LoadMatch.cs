@@ -81,6 +81,7 @@ public class LoadMatch : MonoBehaviour
 
     private void OnEnable()
     {
+        if (Application.isPlaying) return; // dropdown lists are only needed in the editor
         RefreshDropdownLists();
     }
 
@@ -197,7 +198,7 @@ public class LoadMatch : MonoBehaviour
 
     public void ResetField()
     {
-        CheckRobots(); // refresh the robot list once, for the currently selected season
+        if (!Application.isPlaying) CheckRobots(); // in play mode only the chosen robot is loaded (see LoadRobotPrefab)
         DestroyField();
         LoadField();
         for (int i = 0; i < PlayerCount; i++)
@@ -224,11 +225,9 @@ public class LoadMatch : MonoBehaviour
 
     private void SpawnRobot(int playerIndex)
     {
-        if (availableRobots.Count > 0 && selectedRobotIndex[playerIndex] >= 0 &&
-            selectedRobotIndex[playerIndex] < availableRobots.Count)
+        GameObject robotToSpawn = LoadRobotPrefab(playerIndex);
+        if (robotToSpawn != null)
         {
-            GameObject robotToSpawn = availableRobots[selectedRobotIndex[playerIndex]];
-
             Transform spawnLocation;
             if (playerIndex == 0)
             {
@@ -279,6 +278,28 @@ public class LoadMatch : MonoBehaviour
                 }
             }
         }
+    }
+
+    // Loads only the selected robot prefab instead of every robot in the season
+    // (Resources.LoadAll was the main cause of the slow match start).
+    private GameObject LoadRobotPrefab(int playerIndex)
+    {
+        if (!string.IsNullOrEmpty(selectedName[playerIndex]))
+        {
+            var prefab = Resources.Load<GameObject>("Robots/" + selectedSeasonName + "/" + selectedName[playerIndex]);
+            if (prefab != null) return prefab;
+        }
+
+        // Fallback: old behaviour (loads the whole season and picks by index)
+        CheckRobots();
+        if (availableRobots.Count > 0 &&
+            selectedRobotIndex[playerIndex] >= 0 &&
+            selectedRobotIndex[playerIndex] < availableRobots.Count)
+        {
+            return availableRobots[selectedRobotIndex[playerIndex]];
+        }
+
+        return null;
     }
 
     private bool RobotLoaded()
