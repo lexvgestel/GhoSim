@@ -1,14 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MyBox;
-using NUnit.Framework;
-using Unity.VisualScripting;
-//using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
-using UnityEngine.UIElements;
 using Util;
 
 [ExecuteAlways]
@@ -56,12 +50,12 @@ public class LoadMatch : MonoBehaviour
     [ConditionalField(true, nameof(isDriverStationP2))] [SerializeField]
     private TrackingType trackingTypeP2;
 
-    private int[] selectedRobotIndex = new int[2];
-    private string[] selectedName = new string[2];
+    private readonly int[] selectedRobotIndex = new int[2];
+    private readonly string[] selectedName = new string[2];
     private int selectedSeasonIndex;
     private string selectedSeasonName;
-    private List<GameObject> availableRobots = new List<GameObject>();
-    private List<string> availableSeasons = new List<string>();
+    private readonly List<GameObject> availableRobots = new List<GameObject>();
+    private readonly List<string> availableSeasons = new List<string>();
 
     private bool isDriverStationP1() => viewP1 == Cameras.DriverStation;
     private bool isDriverStationP2() => viewP2 == Cameras.DriverStation;
@@ -87,16 +81,16 @@ public class LoadMatch : MonoBehaviour
 
     private void OnEnable()
     {
-        CheckSeasons();
-        robotSeasonSelected.canBeSelected = availableSeasons;
-        CheckRobots();
-        var names = availableRobots.Select(x => x.name).ToList();
-        robotSelectedP1.canBeSelected = names;
-        robotSelectedP2.canBeSelected = names;
+        RefreshDropdownLists();
     }
 
+    // Editor only: keeps the inspector dropdowns up to date while NOT playing.
+    // This does file-system reads and Resources.LoadAll, so it must never run
+    // every frame in play mode or in a build.
     private void LateUpdate()
     {
+        if (Application.isPlaying) return;
+
         CheckSeasons();
         robotSeasonSelected.canBeSelected = availableSeasons;
         robotSeasonSelected.selectedIndex = selectedSeasonIndex;
@@ -114,7 +108,17 @@ public class LoadMatch : MonoBehaviour
         robotSelectedP2.selectedName = selectedName[1];
     }
 
-    private void Start()
+    private void RefreshDropdownLists()
+    {
+        CheckSeasons();
+        robotSeasonSelected.canBeSelected = availableSeasons;
+        CheckRobots();
+        var names = availableRobots.Select(x => x.name).ToList();
+        robotSelectedP1.canBeSelected = names;
+        robotSelectedP2.canBeSelected = names;
+    }
+
+    private void ReadSelections()
     {
         for (int i = 0; i < 2; i++)
         {
@@ -123,25 +127,24 @@ public class LoadMatch : MonoBehaviour
         }
         selectedSeasonIndex = robotSeasonSelected.selectedIndex;
         selectedSeasonName = robotSeasonSelected.selectedName;
-        CheckRobots();
-        ResetField();
+    }
+
+    private void Start()
+    {
+        ReadSelections();
+        ResetField(); // ResetField refreshes the robot list itself
     }
 
     private void Update()
     {
-        for (int i = 0; i < 2; i++)
-        {
-            selectedName[i] = RobotDropdown(i).selectedName;
-            selectedRobotIndex[i] = RobotDropdown(i).selectedIndex;
-        }
-        selectedSeasonIndex = robotSeasonSelected.selectedIndex;
-        selectedSeasonName = robotSeasonSelected.selectedName;
+        ReadSelections();
 
-        if (!Application.isPlaying && RobotLoaded()) //if (!EditorApplication.isPlayingOrWillChangePlaymode && RobotLoaded())
+        if (Application.isPlaying) return; // everything below is edit-mode only
+
+        if (RobotLoaded())
         {
             DeleteRobots();
         }
-        if (Application.isPlaying) return; //Editor
 
         if (!CheckField())
         {
@@ -158,7 +161,6 @@ public class LoadMatch : MonoBehaviour
         {
             name = "FieldHolder",
             transform = { position = Vector3.zero, rotation = Quaternion.identity, parent = transform },
-
         };
         Instantiate(fieldPrefab[0], Vector3.zero, Quaternion.identity, _fieldHolder.transform);
     }
@@ -169,17 +171,16 @@ public class LoadMatch : MonoBehaviour
         {
             return false;
         }
-        else
-        {
-            return _fieldHolder.transform.Find(fieldPrefab[0].name+"(Clone)");
-        }
+
+        return _fieldHolder != null && _fieldHolder.transform.Find(fieldPrefab[0].name + "(Clone)");
     }
 
     private void DestroyField()
     {
-        if (transform.Find("FieldHolder"))
+        var holder = transform.Find("FieldHolder");
+        if (holder)
         {
-            _fieldHolder = transform.Find("FieldHolder").GameObject();
+            _fieldHolder = holder.gameObject;
             DestroyImmediate(_fieldHolder);
         }
     }
@@ -196,6 +197,7 @@ public class LoadMatch : MonoBehaviour
 
     public void ResetField()
     {
+        CheckRobots(); // refresh the robot list once, for the currently selected season
         DestroyField();
         LoadField();
         for (int i = 0; i < PlayerCount; i++)
@@ -265,19 +267,13 @@ public class LoadMatch : MonoBehaviour
 
                 switch (View(playerIndex))
                 {
-                    case (Cameras.FirstPerson) :
+                    case Cameras.FirstPerson:
+                    case Cameras.FirstPersonReversed:
                         controller.fieldCentric = false;
                         break;
-                    case (Cameras.FirstPersonReversed) :
-                        controller.fieldCentric = false;
-                        break;
-                    case (Cameras.ThirdPerson) :
-                        controller.fieldCentric = true;
-                        break;
-                    case (Cameras.ReversedThirdPerson) :
-                        controller.fieldCentric = true;
-                        break;
-                    case Cameras.DriverStation :
+                    case Cameras.ThirdPerson:
+                    case Cameras.ReversedThirdPerson:
+                    case Cameras.DriverStation:
                         controller.fieldCentric = true;
                         break;
                 }
@@ -359,7 +355,6 @@ public class LoadMatch : MonoBehaviour
         }
     }
 
-
     public void CheckSeasons()
     {
         string resourcesPath = Path.Combine(Application.dataPath, "Resources", "Robots");
@@ -372,8 +367,7 @@ public class LoadMatch : MonoBehaviour
 
             foreach (string path in rawFolderPaths)
             {
-                string folderName = Path.GetFileName(path);
-                availableSeasons.Add(folderName);
+                availableSeasons.Add(Path.GetFileName(path));
             }
         }
 
@@ -389,10 +383,7 @@ public class LoadMatch : MonoBehaviour
         GameObject[] loadedRobots = Resources.LoadAll<GameObject>(path);
 
         availableRobots.Clear();
-        foreach (var robot in loadedRobots)
-        {
-            availableRobots.Add(robot);
-        }
+        availableRobots.AddRange(loadedRobots);
 
         for (int i = 0; i < 2; i++)
         {

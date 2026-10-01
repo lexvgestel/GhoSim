@@ -33,7 +33,7 @@ public class SwerveController : MonoBehaviour
 
     private PlayerInput _playerInput;
     private InputActionMap _inputActionMap;
-
+private InputAction _toggleReverseAction;
     private InputAction _translateAction;
     private InputAction _rotateAction;
 
@@ -69,6 +69,16 @@ public class SwerveController : MonoBehaviour
         _rotateAction = _playerInput.actions.FindAction("RightStick");
         _translateAction.Enable();
         _rotateAction.Enable();
+
+        _toggleReverseAction = _playerInput.actions.FindAction("ToggleReverse");
+if (_toggleReverseAction != null)
+{
+    _toggleReverseAction.Enable();
+}
+else
+{
+    Debug.LogWarning("SwerveController: no 'ToggleReverse' action found - add one to the input actions asset to enable the live steering-invert toggle.");
+}
 
         _moduleNames[FL_MODULE] = "lf";
         _moduleNames[FR_MODULE] = "rf";
@@ -243,4 +253,11 @@ if (fieldCentric || inputsOveriden)
         public float Angle;
         public float Velocity;
     }
+    private void Update()
+{
+    if (_toggleReverseAction != null && _toggleReverseAction.WasPressedThisFrame())
+    {
+        reversed = !reversed;
+    }
+}
 }
